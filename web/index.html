@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Playlist Audio Downloader</h1>
+        <input type="text" id="spotifyLink" placeholder="Paste your song link or playlist link here">
+        <button onclick="download()">Download</button>
+
+        <!-- Progress bar -->
+        <progress id="progress" value="0" max="100" style="display:none;"></progress>
+
+        <div id="result"></div>
+        
+        <!-- Logs section -->
+        <div id="logs" class="logs"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,7 @@
+services:
+  playlistdl:
+    container_name: playlistdl
+    build: .
+    ports:
+      - "4827:5000"
+        #  command: ["/start.sh"]
