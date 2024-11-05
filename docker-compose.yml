@@ -1,7 +1,12 @@
-services:
-  playlistdl:
-    container_name: playlistdl
-    build: .
-    ports:
-      - "4827:5000"
-        #  command: ["/start.sh"]
+ services:
+   playlistdl:
+     image: yourdockerhubusername/playlistdl:v1
+     container_name: playlistdl
+     build: .
+     ports:
+       - "5000:5000"
+     volumes:
+       - ./downloads:/app/downloads
+     environment:
+       - CLEANUP_INTERVAL=300  # Cleanup interval in seconds (optional)
+     restart: unless-stopped
