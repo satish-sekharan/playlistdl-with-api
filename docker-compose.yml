@@ -1,7 +1,7 @@
 
 services:
   playlistdl:
-    image: tanner23456/playlistdl:v1
+    image: tanner23456/playlistdl:v2
     container_name: playlistdl
     ports:
       - "5005:5000"
