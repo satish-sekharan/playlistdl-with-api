@@ -3,23 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Downloader</title>
+    <title>Audio Downloader</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Playlist Audio Downloader</h1>
-        <input type="text" id="spotifyLink" placeholder="Paste your song link or playlist link here">
+        <!-- Admin button in the top right corner -->
+	<button id="adminButton" onclick="handleAdminButton()">Admin</button>
+
+        <h1>Audio Downloader</h1>
+        <div id="adminMessage" style="display: none; color: red; font-weight: bold;">
+    	Now downloading directly to your server!
+	</div>
+	<input type="text" id="spotifyLink" placeholder="Paste your song link or playlist link here">
         <button onclick="download()">Download</button>
 
         <!-- Progress bar -->
         <progress id="progress" value="0" max="100" style="display:none;"></progress>
 
         <div id="result"></div>
-        
+
         <!-- Logs section -->
         <div id="logs" class="logs"></div>
     </div>
+
+    <!-- Login modal for admin access -->
+    <!-- Login modal for admin access -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeLoginModal()" class="close">&times;</span>
+            <h2>Admin Login</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <div id="loginMessage"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -2,16 +2,20 @@ from flask import Flask, send_from_directory, jsonify, request, Response
 import subprocess
 import os
 import zipfile
-import io
 import uuid
 import shutil
 import threading
 import time
+import re  # Add regex for capturing album/playlist name
 
 app = Flask(__name__, static_folder='web')
 BASE_DOWNLOAD_FOLDER = '/app/downloads'
+AUDIO_DOWNLOAD_PATH = os.getenv('AUDIO_DOWNLOAD_PATH', BASE_DOWNLOAD_FOLDER)
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
-# Ensure the base downloads directory exists
+sessions = {}
+
 os.makedirs(BASE_DOWNLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
@@ -22,74 +26,112 @@ def serve_index():
 def serve_static(path):
     return send_from_directory(app.static_folder, path)
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        session_id = str(uuid.uuid4())
+        sessions[session_id] = username
+        response = jsonify({"success": True})
+        response.set_cookie('session', session_id)
+        return response
+    return jsonify({"success": False}), 401
+
+def is_logged_in():
+    session_id = request.cookies.get('session')
+    return session_id in sessions
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    response = jsonify({"success": True})
+    response.delete_cookie('session')  # Remove session cookie
+    return response
+
+@app.route('/check-login')
+def check_login():
+    is_logged_in_status = is_logged_in()
+    return jsonify({"loggedIn": is_logged_in_status})
+
+
 @app.route('/download')
 def download_media():
     spotify_link = request.args.get('spotify_link')
     if not spotify_link:
         return jsonify({"status": "error", "output": "No link provided"}), 400
 
-    # Generate a unique folder for this session using UUID
     session_id = str(uuid.uuid4())
-    session_download_folder = os.path.join(BASE_DOWNLOAD_FOLDER, session_id)
-    os.makedirs(session_download_folder, exist_ok=True)
+    download_folder = AUDIO_DOWNLOAD_PATH if is_logged_in() else os.path.join(BASE_DOWNLOAD_FOLDER, session_id)
+    os.makedirs(download_folder, exist_ok=True)
 
-    # Determine downloader based on link
+    # Set up command for Spotify links with spotdl
     if "spotify" in spotify_link:
-        command = ['spotdl', spotify_link, '--output', session_download_folder]
-    elif "youtube" in spotify_link or "youtu.be" in spotify_link:
-        command = ['yt-dlp', '-x', '--audio-format', 'mp3', '-o', f"{session_download_folder}/%(title)s.%(ext)s", spotify_link]
+        command = [
+            'spotdl',
+            '--output', f"{download_folder}/{{artist}}/{{album}}/{{track-number}} - {{title}}.{{output-ext}}",
+            spotify_link
+        ]
+
+    # Set up command for YouTube links with yt-dlp
     else:
-        return jsonify({"status": "error", "output": "Invalid link type. Only Spotify and YouTube links are supported."}), 400
+        command = [
+            'yt-dlp', '-x', '--audio-format', 'mp3',
+            '-o', f"{download_folder}/%(uploader)s/%(album)s/%(track_number)s - %(title)s.%(ext)s",
+            spotify_link
+        ]
 
-    def generate():
-        try:
-            # Run the selected downloader with real-time output
-            process = subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True
-            )
+    is_admin = is_logged_in()
+    return Response(generate(is_admin, command, download_folder, session_id), mimetype='text/event-stream')
 
-            # Stream each line of output to the client
-            for line in process.stdout:
-                yield f"data: {line.strip()}\n\n"
+def generate(is_admin, command, download_folder, session_id):
+    album_name = None  # Placeholder for album/playlist name
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-            process.stdout.close()
-            process.wait()  # Wait for the process to complete
+        for line in process.stdout:
+            yield f"data: {line.strip()}\n\n"
 
-            if process.returncode == 0:
-                # After completion, find the latest file(s)
-                downloaded_files = os.listdir(session_download_folder)
-                
-                if len(downloaded_files) > 1:
-                    # If multiple files, create a zip file
-                    zip_filename = "playlist.zip"
-                    zip_path = os.path.join(session_download_folder, zip_filename)
-                    with zipfile.ZipFile(zip_path, 'w') as zipf:
-                        for file in downloaded_files:
-                            file_path = os.path.join(session_download_folder, file)
-                            zipf.write(file_path, arcname=file)
-                    yield f"data: DOWNLOAD: {session_id}/{zip_filename}\n\n"
-                elif downloaded_files:
-                    # If only one file, just send its filename
-                    yield f"data: DOWNLOAD: {session_id}/{downloaded_files[0]}\n\n"
-                else:
-                    yield f"data: Error: No files downloaded.\n\n"
-                
-                # Start a thread to delete the folder after a delay
-                threading.Thread(target=delayed_delete, args=(session_download_folder,)).start()
+            # Look for the playlist or album name in SpotDL output
+            match = re.search(r'Found \d+ songs in (.+?) \(', line)
+            if match:
+                album_name = match.group(1).strip()
+            
+        process.stdout.close()
+        process.wait()
 
+        if process.returncode == 0:
+            downloaded_files = os.listdir(download_folder)
+
+            if len(downloaded_files) > 1 and not is_admin:
+                # Use album or playlist name if available for the ZIP filename
+                zip_filename = f"{album_name}.zip" if album_name else "playlist.zip"
+                zip_path = os.path.join(download_folder, zip_filename)
+                with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    # Walk through all files and directories in download_folder
+                    for root, _, files in os.walk(download_folder):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            # Add the file to the zip with its relative path from download_folder
+                            arcname = os.path.relpath(file_path, start=download_folder)
+                            zipf.write(file_path, arcname=arcname)  # Keep directory structure in zip
+
+                yield f"data: DOWNLOAD: {session_id}/{zip_filename}\n\n"
+            elif downloaded_files and not is_admin:
+                yield f"data: DOWNLOAD: {session_id}/{downloaded_files[0]}\n\n"
             else:
-                yield f"data: Error: Download exited with code {process.returncode}.\n\n"
+                yield "data: Download completed. Files saved to server directory.\n\n"
 
-        except Exception as e:
-            yield f"data: Error: {str(e)}\n\n"
+            if not is_admin:
+                threading.Thread(target=delayed_delete, args=(download_folder,)).start()
 
-    return Response(generate(), mimetype='text/event-stream')
+        else:
+            yield f"data: Error: Download exited with code {process.returncode}.\n\n"
+
+    except Exception as e:
+        yield f"data: Error: {str(e)}\n\n"
 
 def delayed_delete(folder_path):
-    # Wait for 5 minutes (300 seconds) before deleting
     time.sleep(300)
     shutil.rmtree(folder_path, ignore_errors=True)
 

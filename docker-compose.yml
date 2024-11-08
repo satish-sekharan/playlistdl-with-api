@@ -1,12 +1,16 @@
- services:
-   playlistdl:
-     image: yourdockerhubusername/playlistdl:v1
-     container_name: playlistdl
-     build: .
-     ports:
-       - "5000:5000"
-     volumes:
-       - ./downloads:/app/downloads
-     environment:
-       - CLEANUP_INTERVAL=300  # Cleanup interval in seconds (optional)
-     restart: unless-stopped
+
+services:
+  playlistdl:
+    image: tanner23456/playlistdl:v1
+    container_name: playlistdl_test
+    build: .
+    ports:
+      - "5005:5000"
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=password
+      - AUDIO_DOWNLOAD_PATH=${AUDIO_DOWNLOAD_PATH}  # Use the env variable
+      - CLEANUP_INTERVAL=300  # Optional
+    volumes:
+      - ${AUDIO_DOWNLOAD_PATH}:${AUDIO_DOWNLOAD_PATH}  # Reference env variable here as well
+    restart: unless-stopped
