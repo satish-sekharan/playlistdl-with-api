@@ -63,8 +63,8 @@ services:
 ### Environment Variables
 
 - `CLEANUP_INTERVAL`: (Optional) Sets the cleanup interval for session-based download folders. Defaults to `300` seconds (5 minutes) if not specified.
-- 'ADMIN_USERNAME' and 'ADMIN_PASSWORD':(Optional) Sets the login credentials for admin access.
-- 'AUDIO_DOWNLOAD_PATH': Sets the folder for admin-mode downloads. Files downloaded as an admin are stored here. This is set in your .env file.
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD`:(Optional) Sets the login credentials for admin access.
+- `AUDIO_DOWNLOAD_PATH`: Sets the folder for admin-mode downloads. Files downloaded as an admin are stored here. This is set in your .env file.
 
 ## Technical Overview
 
