@@ -1,13 +1,15 @@
-# Playlist Downloader
+# Audio Downloader
 
-A self-hosted web application for downloading playlists from Spotify and YouTube as MP3 files. The application provides a web interface for users to input playlist links, which are then downloaded as audio files using `spotdl` (for Spotify) or `yt-dlp` (for YouTube).
+A self-hosted web application for downloading songs, albums, or playlists from Spotify and YouTube as MP3 files. The application provides a web interface for users to input links, which are then downloaded as audio files using `spotdl` (for Spotify) or `yt-dlp` (for YouTube).
 
 ## Features
 
 - **Download Spotify and YouTube playlists**: Automatically detects and processes playlists based on the URL.
 - **Session-based download directories**: Isolates each user session to a unique download directory.
+- **Admin Mode**: Enables admin users to download directly to a specified folder on the server.
 - **Progress bar and download logs**: View download progress and logs in real-time via the web interface.
 - **Auto-cleanup**: Deletes temporary session download folders after a specified time.
+- **Organized Downloads**: Downloads are structured by artist and album folders, maintaining organization across downloads.
 <!--- **Admin mode**: Allows the admin to specify a custom directory for downloads.
 -->
 ## Prerequisites
@@ -21,9 +23,8 @@ A self-hosted web application for downloading playlists from Spotify and YouTube
    ```yaml
     services:
       playlistdl:
-        image: yourdockerhubusername/playlistdl:v1
+        image: tanner23456/playlistdl:v1
         container_name: playlistdl
-        build: .
         ports:
           - "5000:5000"
         volumes:
@@ -42,6 +43,10 @@ A self-hosted web application for downloading playlists from Spotify and YouTube
    - Enter a Spotify or YouTube playlist URL.
    - Click **Download** to start the process.
    - Monitor download progress and logs via the interface.
+3. **Admin Mode**:
+   - Click the **Admin** button to log in with your credentials.
+   - Once logged in, a message will appear in red indicating, "Now downloading directly to your server!"
+   - Enter the playlist or album link as usual, and files will be saved to the designated admin folder on your server.
 <!--
 3. **Admin Mode**:
    - Click the **Admin** button to log in with your credentials.
@@ -52,6 +57,8 @@ A self-hosted web application for downloading playlists from Spotify and YouTube
 ### Environment Variables
 
 - `CLEANUP_INTERVAL`: (Optional) Sets the cleanup interval for session-based download folders. Defaults to `300` seconds (5 minutes) if not specified.
+- 'ADMIN_USERNAME' and 'ADMIN_PASSWORD':(Optional) Sets the login credentials for admin access.
+- 'AUDIO_DOWNLOAD_PATH': Sets the folder for admin-mode downloads. Files downloaded as an admin are stored here. This is set in your .env file.
 
 ## Technical Overview
 

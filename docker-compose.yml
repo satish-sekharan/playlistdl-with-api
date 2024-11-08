@@ -2,13 +2,14 @@
 services:
   playlistdl:
     image: tanner23456/playlistdl:v1
-    container_name: playlistdl_test
-    build: .
+    container_name: playlistdl
     ports:
       - "5005:5000"
     environment:
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=password
+        #Direct Server Download
+        #- ADMIN_USERNAME=admin #Insert unique username here!
+        #- ADMIN_PASSWORD=password #Insert unique password here!
+      
       - AUDIO_DOWNLOAD_PATH=${AUDIO_DOWNLOAD_PATH}  # Use the env variable
       - CLEANUP_INTERVAL=300  # Optional
     volumes:
