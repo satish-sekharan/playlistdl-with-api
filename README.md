@@ -21,17 +21,23 @@ A self-hosted web application for downloading songs, albums, or playlists from S
 **Run with Docker Compose**:
    Use the provided `docker-compose.yaml` configuration to start the container.
    ```yaml
-    services:
-      playlistdl:
-        image: tanner23456/playlistdl:v1
-        container_name: playlistdl
-        ports:
-          - "5000:5000"
-        volumes:
-          - ./downloads:/app/downloads
-        environment:
-          - CLEANUP_INTERVAL=300  # Cleanup interval in seconds (optional)
-        restart: unless-stopped
+services:
+  playlistdl:
+    image: tanner23456/playlistdl:v2
+    container_name: playlistdl
+    ports:
+      - "5005:5000"
+    environment:
+        #Direct Server Download
+        #- ADMIN_USERNAME=admin #Insert unique username here!
+        #- ADMIN_PASSWORD=password #Insert unique password here!
+
+      - AUDIO_DOWNLOAD_PATH=${AUDIO_DOWNLOAD_PATH}  # Use the env variable
+      - CLEANUP_INTERVAL=300  # Optional
+    volumes:
+      - ${AUDIO_DOWNLOAD_PATH}:${AUDIO_DOWNLOAD_PATH}  # Reference env variable here as well
+    restart: unless-stopped
+
 ```
 
 ## Usage
