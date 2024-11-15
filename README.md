@@ -29,8 +29,8 @@ services:
       - "4827:5000"
     environment:
       #Direct Server Download
-      - ADMIN_USERNAME=Tanner23456 #Insert unique username here!
-      - ADMIN_PASSWORD=Tn7281994! #Insert unique password here!
+      - ADMIN_USERNAME= #Insert unique username here!
+      - ADMIN_PASSWORD= #Insert unique password here!
 
       - AUDIO_DOWNLOAD_PATH=${AUDIO_DOWNLOAD_PATH}  # Use the env variable
       - CLEANUP_INTERVAL=300  # Optional
