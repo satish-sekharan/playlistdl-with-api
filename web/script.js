@@ -67,76 +67,7 @@ async function download() {
         eventSource.close();
     };
 }
-// Function to handle the Admin / Log Out button behavior
-function handleAdminButton() {
-    if (document.getElementById('adminButton').innerText === "Admin") {
-        showLoginModal();  // Show login modal if not logged in
-    } else {
-        logout();  // Log out if already logged in
-    }
+
+const showPirate = () => {
+    
 }
-
-// Show login modal
-function showLoginModal() {
-    const loginModal = document.getElementById('loginModal');
-    loginModal.classList.add('show');  // Show modal on button click
-}
-
-// Hide login modal
-function closeLoginModal() {
-    const loginModal = document.getElementById('loginModal');
-    loginModal.classList.remove('show');  // Hide modal when closed
-}
-
-// Check login status, toggle button text, and show/hide admin message
-async function checkLoginStatus() {
-    const response = await fetch('/check-login');
-    const data = await response.json();  
-    const adminButton = document.getElementById('adminButton');
-    const adminMessage = document.getElementById('adminMessage');  // Select the message element
-
-    if (data.loggedIn) {
-        adminButton.innerText = "Log Out";
-        adminMessage.style.display = "block";  // Show the message when logged in
-    } else {
-        adminButton.innerText = "Admin";
-        adminMessage.style.display = "none";   // Hide the message when logged out
-    }
-}
-
-// Log out function
-async function logout() {
-    const response = await fetch('/logout', { method: 'POST' });
-    const data = await response.json();
-
-    if (data.success) {
-        document.getElementById('adminButton').innerText = "Admin";  // Reset button text
-        document.getElementById('adminMessage').style.display = "none";  // Hide the message on logout
-    }
-}
-
-// After successful login, change button text to "Log Out" and show the message
-async function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    const response = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
-
-    const data = await response.json();
-    if (data.success) {
-        document.getElementById('loginMessage').innerText = "Login successful!";
-        document.getElementById('adminButton').innerText = "Log Out";  // Update button text
-        document.getElementById('adminMessage').style.display = "block";  // Show the message on login
-        closeLoginModal();
-    } else {
-        document.getElementById('loginMessage').innerText = "Login failed. Try again.";
-    }
-}
-
-// Call checkLoginStatus on page load to set initial button state and message visibility
-window.onload = checkLoginStatus;
-

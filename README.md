@@ -2,6 +2,38 @@
 
 A self-hosted web application for downloading songs, albums, or playlists from Spotify and YouTube as MP3 files. The application provides a web interface for users to input links, which are then downloaded as audio files using `spotdl` (for Spotify) or `yt-dlp` (for YouTube).
 
+This is a fork, please read carefully the modifications
+
+----
+
+# Informations about this fork
+
+This version is in french, you will not understand the content, unless you speak french...?
+
+**If you plan on using it, just fork this fork, and modify to modify, it's better to be better. 🤓**
+
+## 👮🏼 CAREFUL Security issues (thbo)
+
+As for my mommy issues, I also have security issues. If you plan on using this version, it is made without the login. Be sure to use this only in local environnement.
+
+## 👩🏼‍💻 API Usage (thbo)
+
+This API is basic, I just removed the need of the cookie, so you can just fetch the url
+`http://yourip:5005/download?spotify_link={thelink}`
+and the download will start. Easier to prevent cookie expiration, without cookies. 🤡
+
+## 🛜 Web (thbo)
+
+The web panel doesn't need any login. So be careful when opening public access.
+
+## 🗃️ Download Folder (thbo)
+
+As asked for a friend, I removed the folders, it just downloads the file like this: `{SongNum} - {Artist} - {Title}.mp3`
+
+---
+
+# Original repo informations
+
 ## Features
 
 - **Download Spotify and YouTube playlists**: Automatically detects and processes playlists based on the URL.
