@@ -1,17 +1,18 @@
 
 services:
   playlistdl:
-    image: playlistdlwithapi:latest
-    container_name: playlistdlwithapi
+    image: thomaboehi:playlistdlwithapi:latest
+    container_name: PlaylistDLWithAPI
     ports:
       - "5005:5000"
     environment:
-      #Direct Server Download
-      - ADMIN_USERNAME=admin #Insert unique username here!
-      - ADMIN_PASSWORD=password #Insert unique password here!
-      
-      - AUDIO_DOWNLOAD_PATH=${AUDIO_DOWNLOAD_PATH}  # Use the env variable
+      #User ID for permission
+      - USER_ID: 1000
+      - GROUP_USER_ID: 1000
+      #Follow mariushosting tutorial on how to get user ID on Synology NAS if you host on NAS.
+      # https://mariushosting.com/synology-find-uid-userid-and-gid-groupid-in-5-seconds/
+      - AUDIO_DOWNLOAD_PATH=/your/local/path  # Use the env variable
       - CLEANUP_INTERVAL=300  # Optional
     volumes:
-      - ${AUDIO_DOWNLOAD_PATH}:${AUDIO_DOWNLOAD_PATH}:rw  # Reference env variable here as well
+      - /your/local/path:/your/local/path:rw  # Reference env variable here as well
     restart: unless-stopped

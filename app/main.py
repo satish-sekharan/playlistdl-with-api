@@ -42,13 +42,13 @@ def download_media():
     if "spotify" in spotify_link:
         command = [
             'spotdl',
-            '--output', f"{download_folder}/{{track-number}} - {{artist}} - {{title}}.{{output-ext}}",
+            '--output', f"{download_folder}/{{artist}} - {{title}}.{{output-ext}}",
             spotify_link
         ]
     else:
         command = [
             'yt-dlp', '-x', '--audio-format', 'mp3',
-            '-o', f"{download_folder}/%(track_number)s - %(uploader)s - %(title)s.%(ext)s",
+            '-o', f"{download_folder}/%(uploader)s - %(title)s.%(ext)s",
             spotify_link
         ]
 
@@ -73,10 +73,20 @@ def generate(is_admin, command, download_folder):
         process.wait()
 
         if process.returncode == 0:
-            downloaded_files = os.listdir(download_folder)
+            # Récupération des UID et GID depuis les variables d'environnement, avec des valeurs par défaut au besoin
+            target_uid = int(os.environ.get("USER_ID", "1000"))
+            target_gid = int(os.environ.get("GROUP_USER_ID", "1000"))
+
+            # Parcourir le dossier et modifier le propriétaire de chaque fichier et dossier
+            for root, dirs, files in os.walk(download_folder):
+                for name in files:
+                    os.chown(os.path.join(root, name), target_uid, target_gid)
+                for name in dirs:
+                    os.chown(os.path.join(root, name), target_uid, target_gid)
+
 
             # Pour admin, on ne fait pas de zip, ni de suppression automatique
-            yield "data: Download completed. Files saved to server directory.\n\n"
+            yield "data: Download completed. Files saved to server directory .\n\n"
         else:
             yield f"data: Error: Download exited with code {process.returncode}.\n\n"
 
