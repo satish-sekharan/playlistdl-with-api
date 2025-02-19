@@ -6,12 +6,6 @@ This is a fork, please read carefully the modifications
 
 ----
 
-# Informations about this fork
-
-This version is in french, you will not understand the content, unless you speak french...?
-
-**If you plan on using it, just fork this fork, and modify to modify, it's better to be better. 🤓**
-
 ## 👮🏼 CAREFUL Security issues (thbo)
 
 As for my mommy issues, I also have security issues. If you plan on using this version, it is made without the login. Be sure to use this only in local environnement.
